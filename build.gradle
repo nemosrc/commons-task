@@ -3,7 +3,7 @@ plugins {
     id 'maven-publish'
 }
 
-group 'com.nemosw'
+group 'com.nemosw.commons'
 version '0.1.0-SNAPSHOT'
 
 sourceCompatibility = 1.8
