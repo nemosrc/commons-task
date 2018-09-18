@@ -1,3 +1,25 @@
+/*
+ * Copyright (c) 2018 NemoSW
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package com.nemosw.commons.task;
 
 import java.util.Arrays;
@@ -9,86 +31,19 @@ import static com.nemosw.commons.task.WheelTask.*;
 public final class WheelTimer implements Runnable
 {
 
-    public static Builder builder()
-    {
-        return new Builder();
-    }
-
-    public static final class Builder
-    {
-        private int maxTick = 0;
-
-        private Supplier<LongSupplier> movementSupplier;
-
-        private Builder() {}
-
-        public Builder maxTick(int maxTick)
-        {
-            if (maxTick <= 0)
-                throw new IllegalArgumentException("max tick must be greater than 0");
-
-            this.maxTick = maxTick;
-
-            return this;
-        }
-
-        public Builder movement(LongSupplier movement)
-        {
-            if (movement == null)
-                throw new NullPointerException("movement cannot be null");
-
-            this.movementSupplier = () -> movement;
-
-            return this;
-        }
-
-        public Builder movement(final LongSupplier timeSupplier, final long interval)
-        {
-            if (timeSupplier == null)
-                throw new NullPointerException("time supplier cannot be null");
-
-            this.movementSupplier = () -> {
-                final long initTime = timeSupplier.getAsLong();
-                return () -> (timeSupplier.getAsLong() - initTime) / interval;
-            };
-
-            return this;
-        }
-
-        public WheelTimer build()
-        {
-            int maxTick = this.maxTick;
-
-            if (maxTick == 0)
-                throw new IllegalStateException("max tick has not been initialized.");
-
-            Supplier<LongSupplier> movementSupplier = this.movementSupplier;
-            LongSupplier movement = movementSupplier != null ? movementSupplier.get() : new LongSupplier()
-            {
-
-                private int ticks;
-
-                @Override
-                public long getAsLong()
-                {
-                    return ticks++;
-                }
-            };
-
-            return new WheelTimer(maxTick, movement);
-        }
-    }
-
     private final WheelQueue[] wheel;
-
     private final LongSupplier movement;
-
     private long currentTicks;
 
     private WheelTimer(int maxTick, LongSupplier movement)
     {
         this.wheel = new WheelQueue[maxTick + 1];
         this.movement = movement;
+    }
+
+    public static Builder builder()
+    {
+        return new Builder();
     }
 
     public void schedule(WheelTask task)
@@ -224,6 +179,71 @@ public final class WheelTimer implements Runnable
         }
 
         Arrays.fill(wheel, null);
+    }
+
+    public static final class Builder
+    {
+        private int maxTick = 0;
+
+        private Supplier<LongSupplier> movementSupplier;
+
+        private Builder() {}
+
+        public Builder maxTick(int maxTick)
+        {
+            if (maxTick <= 0)
+                throw new IllegalArgumentException("max tick must be greater than 0");
+
+            this.maxTick = maxTick;
+
+            return this;
+        }
+
+        public Builder movement(LongSupplier movement)
+        {
+            if (movement == null)
+                throw new NullPointerException("movement cannot be null");
+
+            this.movementSupplier = () -> movement;
+
+            return this;
+        }
+
+        public Builder movement(final LongSupplier timeSupplier, final long interval)
+        {
+            if (timeSupplier == null)
+                throw new NullPointerException("time supplier cannot be null");
+
+            this.movementSupplier = () -> {
+                final long initTime = timeSupplier.getAsLong();
+                return () -> (timeSupplier.getAsLong() - initTime) / interval;
+            };
+
+            return this;
+        }
+
+        public WheelTimer build()
+        {
+            int maxTick = this.maxTick;
+
+            if (maxTick == 0)
+                throw new IllegalStateException("max tick has not been initialized.");
+
+            Supplier<LongSupplier> movementSupplier = this.movementSupplier;
+            LongSupplier movement = movementSupplier != null ? movementSupplier.get() : new LongSupplier()
+            {
+
+                private int ticks;
+
+                @Override
+                public long getAsLong()
+                {
+                    return ticks++;
+                }
+            };
+
+            return new WheelTimer(maxTick, movement);
+        }
     }
 
 }
