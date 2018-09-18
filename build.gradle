@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'com.nemosw.commons'
-version '0.1.0-SNAPSHOT'
+version '0.1.1-SNAPSHOT'
 
 sourceCompatibility = 1.8
 
@@ -37,6 +37,30 @@ publishing {
             from components.java
             artifact sourceJar
             artifact javadocJar
+
+            pom {
+                name = 'commons-task'
+                description = 'Java task library'
+                url = 'http://www.example.com/library'
+                licenses {
+                    license {
+                        name = 'The Apache License, Version 2.0'
+                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'nemosw'
+                        name = 'NemoSW'
+                        email = 'nemosrc@gmail.com'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:git://example.com/my-library.git'
+                    developerConnection = 'scm:git:ssh://example.com/my-library.git'
+                    url = 'http://example.com/my-library/'
+                }
+            }
         }
     }
 }

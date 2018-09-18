@@ -24,38 +24,96 @@ package com.nemosw.commons.task;
 
 import java.util.Arrays;
 import java.util.function.LongSupplier;
-import java.util.function.Supplier;
 
 import static com.nemosw.commons.task.WheelTask.*;
 
-public final class WheelTimer implements Runnable
+/**
+ * A timer that supports circular tasks.<br>
+ * * This class is not thread-safe
+ *
+ * @author Nemo
+ * @see WheelTask
+ */
+public class WheelTimer implements Runnable
 {
-
     private final WheelQueue[] wheel;
+
     private final LongSupplier movement;
+
     private long currentTicks;
 
-    private WheelTimer(int maxTick, LongSupplier movement)
+    /**
+     * Constructs an empty timer with the specified initial capacity
+     *
+     * @param maxTick timer in support ticks
+     * @see WheelTimer#WheelTimer(int, LongSupplier)
+     * @see WheelTimer#WheelTimer(int, LongSupplier, long)
+     */
+    public WheelTimer(int maxTick)
     {
+        this(maxTick, null);
+    }
+
+    /**
+     * Constructs an empty timer with the specified initial capacity and time based movement
+     *
+     * @param maxTick      timer in support ticks
+     * @param timeSupplier time supplier {@code System::nanoTime() or System::currentTimeMillis()}
+     * @param interval     tick interval time
+     * @see WheelTimer#WheelTimer(int)
+     * @see WheelTimer#WheelTimer(int, LongSupplier)
+     */
+    public WheelTimer(int maxTick, final LongSupplier timeSupplier, final long interval)
+    {
+        this(maxTick, () -> timeSupplier.getAsLong() / interval);
+    }
+
+    /**
+     * onstructs an empty timer with the specified initial capacity and movement
+     *
+     * @param maxTick timer in support ticks
+     * @param movement timer tick movement
+     */
+    public WheelTimer(int maxTick, LongSupplier movement)
+    {
+        if (maxTick <= 0)
+            throw new IllegalArgumentException("Illegal maxTick " + maxTick);
+
         this.wheel = new WheelQueue[maxTick + 1];
         this.movement = movement;
+
+        if (movement != null)
+            this.currentTicks = movement.getAsLong();
     }
 
-    public static Builder builder()
-    {
-        return new Builder();
-    }
-
+    /**
+     * Register a one-time task.
+     *
+     * @param task Task to run in the future
+     */
     public void schedule(WheelTask task)
     {
         registerTask(task, 0, 0);
     }
 
+    /**
+     * Register a one-time task with delay.
+     *
+     * @param task  Task to run in the future
+     * @param delay Delay ticks
+     */
     public void schedule(WheelTask task, int delay)
     {
         registerTask(task, Math.max(0, delay), 0);
     }
 
+    /**
+     * Register a repeating task.
+     *
+     * @param task   Task to run in the future
+     * @param delay  Delay ticks
+     * @param period Repeat delay ticks
+     */
     public void schedule(WheelTask task, int delay, int period)
     {
         registerTask(task, Math.max(0, delay), Math.max(1, period));
@@ -93,11 +151,15 @@ public final class WheelTimer implements Runnable
         queue.linkLast(task);
     }
 
+    /**
+     * Executes registered tasks in a tickly manner via the run method.
+     * Tasks are called only once, Regardless of elapsed ticks
+     */
     @Override
     public void run()
     {
         long taskTicks = this.currentTicks;
-        long currentTicks = this.movement.getAsLong();
+        long currentTicks = this.movement == null ? taskTicks + 1 : this.movement.getAsLong();
 
         if (taskTicks <= currentTicks)
         {
@@ -160,6 +222,9 @@ public final class WheelTimer implements Runnable
         }
     }
 
+    /**
+     * Cancels all tasks.
+     */
     public void clear()
     {
         WheelQueue[] wheel = this.wheel;
@@ -180,70 +245,4 @@ public final class WheelTimer implements Runnable
 
         Arrays.fill(wheel, null);
     }
-
-    public static final class Builder
-    {
-        private int maxTick = 0;
-
-        private Supplier<LongSupplier> movementSupplier;
-
-        private Builder() {}
-
-        public Builder maxTick(int maxTick)
-        {
-            if (maxTick <= 0)
-                throw new IllegalArgumentException("max tick must be greater than 0");
-
-            this.maxTick = maxTick;
-
-            return this;
-        }
-
-        public Builder movement(LongSupplier movement)
-        {
-            if (movement == null)
-                throw new NullPointerException("movement cannot be null");
-
-            this.movementSupplier = () -> movement;
-
-            return this;
-        }
-
-        public Builder movement(final LongSupplier timeSupplier, final long interval)
-        {
-            if (timeSupplier == null)
-                throw new NullPointerException("time supplier cannot be null");
-
-            this.movementSupplier = () -> {
-                final long initTime = timeSupplier.getAsLong();
-                return () -> (timeSupplier.getAsLong() - initTime) / interval;
-            };
-
-            return this;
-        }
-
-        public WheelTimer build()
-        {
-            int maxTick = this.maxTick;
-
-            if (maxTick == 0)
-                throw new IllegalStateException("max tick has not been initialized.");
-
-            Supplier<LongSupplier> movementSupplier = this.movementSupplier;
-            LongSupplier movement = movementSupplier != null ? movementSupplier.get() : new LongSupplier()
-            {
-
-                private int ticks;
-
-                @Override
-                public long getAsLong()
-                {
-                    return ticks++;
-                }
-            };
-
-            return new WheelTimer(maxTick, movement);
-        }
-    }
-
 }

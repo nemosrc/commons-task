@@ -22,6 +22,12 @@
 
 package com.nemosw.commons.task;
 
+/**
+ * A task that can be scheduled for one-time or repeated execution by a WheelTimer.
+ *
+ * @author  Nemo
+ * @see     WheelTimer
+ */
 public abstract class WheelTask implements Runnable
 {
     static final int VIRGIN = 0;
@@ -44,9 +50,18 @@ public abstract class WheelTask implements Runnable
 
     long nextRun;
 
+    /**
+     * Overrides the run method to execute the created work.
+     */
     @Override
     public abstract void run();
 
+    /**
+     * Cancels a registered task.<br>
+     * After the cancellation, the run method is no longer called in the future.
+     *
+     * @return Returns true if successfully removed from the queue.
+     */
     public boolean cancel()
     {
         WheelQueue queue = this.queue;
