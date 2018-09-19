@@ -1,10 +1,11 @@
 plugins {
     id 'java'
     id 'maven-publish'
+    id 'com.jfrog.bintray' version '1.8.4'
 }
 
 group 'com.nemosw.commons'
-version '0.1.1-SNAPSHOT'
+version '0.1'
 
 sourceCompatibility = 1.8
 
@@ -16,11 +17,28 @@ dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
 
-javadoc {
-    options.encoding = 'UTF-8'
+bintray {
+    user = System.getenv('BINTRAY_USER')
+    key = System.getenv('BINTRAY_KEY')
+    publications = ['maven']
+    publish = true
+    pkg {
+        repo = 'commons'
+        name = 'commons-task'
+        licenses = ['MIT']
+        issueTrackerUrl = 'https://github.com/nemosrc/commons-task/issues'
+        vcsUrl = 'https://github.com/nemosrc/commons-task.git'
+
+        version {
+            name = '0.1'
+            desc = 'NemoSW commons-task library'
+            released  = new Date()
+            vcsTag = '0.1'
+        }
+    }
 }
 
-task sourceJar(type: Jar) {
+task sourcesJar(type: Jar) {
     classifier = 'sources'
     from sourceSets.main.java
 }
@@ -33,32 +51,33 @@ task javadocJar(type: Jar) {
 publishing {
     publications {
         maven(MavenPublication) {
-            artifactId name
             from components.java
-            artifact sourceJar
+            artifact sourcesJar
             artifact javadocJar
-
+            groupId 'com.nemosw.commons'
+            artifactId 'commons-task'
+            version '0.1'
             pom {
                 name = 'commons-task'
-                description = 'Java task library'
-                url = 'http://www.example.com/library'
+                description = 'NemoSW task library'
+                url = 'https://nemosw.com'
                 licenses {
                     license {
-                        name = 'The Apache License, Version 2.0'
-                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        name = 'MIT License'
+                        url = 'http://www.opensource.org/licenses/mit-license.php'
                     }
                 }
                 developers {
                     developer {
-                        id = 'nemosw'
-                        name = 'NemoSW'
+                        id = 'nemo'
+                        name = 'Nemo'
                         email = 'nemosrc@gmail.com'
                     }
                 }
                 scm {
-                    connection = 'scm:git:git://example.com/my-library.git'
-                    developerConnection = 'scm:git:ssh://example.com/my-library.git'
-                    url = 'http://example.com/my-library/'
+                    connection = 'scm:git:git://github.com/nemosrc/commons-task.git'
+                    developerConnection = 'scm:git:ssh://github.com/nemosrc/commons-task.git'
+                    url = 'https://github.com/nemosrc/commons-task/'
                 }
             }
         }
