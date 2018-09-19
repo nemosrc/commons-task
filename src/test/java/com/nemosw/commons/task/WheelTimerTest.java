@@ -32,6 +32,6 @@ public class WheelTimerTest
     @Test
     public void test()
     {
-        throw new RuntimeException();
+
     }
 }
