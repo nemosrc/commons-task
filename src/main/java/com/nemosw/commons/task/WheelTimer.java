@@ -122,7 +122,7 @@ public class WheelTimer implements Runnable
     private void registerTask(WheelTask task, int delay, int period)
     {
         if (task.state == SCHEDULED)
-            throw new IllegalArgumentException("Already scheduled task " + task.toString());
+            throw new IllegalArgumentException("Already scheduled task " + task);
 
         WheelQueue[] wheel = this.wheel;
         int length = wheel.length;
