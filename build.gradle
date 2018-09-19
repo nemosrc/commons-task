@@ -58,7 +58,7 @@ publishing {
             artifactId 'commons-task'
             version '0.1'
             pom {
-                name = 'commons-task'
+//                name = 'commons-task'
                 description = 'NemoSW task library'
                 url = 'https://nemosw.com'
                 licenses {
