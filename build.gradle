@@ -32,7 +32,7 @@ bintray {
         version {
             name = '0.1'
             desc = 'NemoSW commons-task library'
-            released  = new Date()
+            released = new Date()
             vcsTag = '0.1'
         }
     }
