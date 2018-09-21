@@ -51,12 +51,10 @@ task javadocJar(type: Jar) {
 publishing {
     publications {
         maven(MavenPublication) {
+            artifactId 'commons-task'
             from components.java
             artifact sourcesJar
-            artifact javadocJar
-            groupId 'com.nemosw.commons'
-            artifactId 'commons-task'
-            version '0.1'
+            artifact javadocJar   
             pom {
                 name = 'commons-task'
                 description = 'NemoSW task library'
